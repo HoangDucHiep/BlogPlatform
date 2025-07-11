@@ -1,10 +1,12 @@
-﻿WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
+
+// Add health checks
+builder.Services.AddHealthChecks();
 
 WebApplication app = builder.Build();
 
@@ -19,7 +21,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.MapGet("/", () => "Helloworld");
+app.MapGet("/", () => "Hello from Lumo Blog API!");
+
+// Add health check endpoint
+app.MapHealthChecks("/health");
 
 app.UseHttpsRedirection();
 
@@ -27,4 +32,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

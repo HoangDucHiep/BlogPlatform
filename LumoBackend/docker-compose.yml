@@ -1,0 +1,51 @@
+﻿
+services:
+  lumo.api:
+    image: ${DOCKER_REGISTRY-}lumoapi
+    container_name: lumo.api
+    build:
+      context: .
+      dockerfile: Lumo.Api/Dockerfile
+    depends_on:
+      lumo.db:
+        condition: service_healthy
+    networks:
+      - lumo_network
+
+  lumo.db:
+    image: postgres:17
+    container_name: lumo.db
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./.containers/database:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_PORT}:5432
+    networks:
+      - lumo_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - ${PGADMIN_PORT}:80
+    depends_on:
+      - lumo.db
+    volumes:
+      - ./.containers/pgadmin:/var/lib/pgadmin
+    networks:
+      - lumo_network
+      
+networks:
+  lumo_network:
+    driver: bridge

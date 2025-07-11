@@ -12,6 +12,8 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["Directory.Packages.props", "."]
+COPY ["Directory.Build.props", "."]
 COPY ["Lumo.Api/Lumo.Api.csproj", "Lumo.Api/"]
 RUN dotnet restore "./Lumo.Api/Lumo.Api.csproj"
 COPY . .
