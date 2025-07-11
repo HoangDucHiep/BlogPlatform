@@ -1,4 +1,6 @@
-﻿services:
+﻿version: '3.8'
+
+services:
   # API backend
   lumo.api:
     image: ${DOCKER_REGISTRY-}lumoapi
@@ -14,7 +16,7 @@
     networks:
       - lumo_network
     environment:
-      - Keycloak__Authority=http://idprovider:8080/realms/lumoblog
+      - KEYCLOAK__AUTHORITY=http://idprovider:8080/realms/lumoblog
 
   # Set up postgres database
   lumo.db:
