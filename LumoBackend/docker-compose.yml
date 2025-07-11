@@ -1,5 +1,7 @@
-﻿
+﻿version: '3.8'
+
 services:
+  # API backend
   lumo.api:
     image: ${DOCKER_REGISTRY-}lumoapi
     container_name: lumo.api
@@ -9,9 +11,14 @@ services:
     depends_on:
       lumo.db:
         condition: service_healthy
+      idprovider:
+        condition: service_started
     networks:
       - lumo_network
+    environment:
+      - KEYCLOAK__AUTHORITY=http://idprovider:8080/realms/lumoblog
 
+  # Set up postgres database
   lumo.db:
     image: postgres:17
     container_name: lumo.db
@@ -21,6 +28,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ./.containers/database:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
     ports:
       - ${POSTGRES_PORT}:5432
     networks:
@@ -45,6 +53,33 @@ services:
       - ./.containers/pgadmin:/var/lib/pgadmin
     networks:
       - lumo_network
+
+  # Identity Provider configuration
+  # Setup Keycloak
+  idprovider:
+    image: quay.io/keycloak/keycloak:26.3
+    command: start
+    container_name: lumo.keycloak
+    environment:
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://lumo.db:5432/${KEYCLOAK_DB}
+      - KC_DB_USERNAME=${KEYCLOAK_DB_USER}
+      - KC_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD}
+      - KC_HTTP_ENABLED=true
+      - KC_HOSTNAME_STRICT=false
+      - KC_HOSTNAME_STRICT_HTTPS=false
+    ports:
+      - ${KEYCLOAK_PORT}:8080
+    depends_on:
+      lumo.db:
+        condition: service_healthy
+    networks:
+      - lumo_network
+    volumes:
+      - ./.containers/keycloak:/opt/keycloak/data
+      - ./.file/import/lumoblog-realm-export.json:/opt/keycloak/data/import/lumoblog-realm-export.json
       
 networks:
   lumo_network:
