@@ -60,7 +60,7 @@ services:
   # Setup Keycloak
   idprovider:
     image: quay.io/keycloak/keycloak:26.3
-    command: start
+    command: start --import-realm
     container_name: lumo.keycloak
     environment:
       - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}

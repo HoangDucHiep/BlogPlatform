@@ -2,6 +2,8 @@
 using Lumo.Application.Exceptions;
 using Lumo.Domain.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Newtonsoft.Json;
 
 namespace Lumo.Infrastructure;
@@ -25,6 +27,22 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
+        foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(Entity).IsAssignableFrom(entityType.ClrType))
+            {
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property(nameof(Entity.CreatedAtUtc))
+                    .HasColumnType("timestamp with time zone")
+                    .IsRequired();
+
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property(nameof(Entity.LastUpdatedAtUtc))
+                    .HasColumnType("timestamp with time zone")
+                    .IsRequired();
+            }
+        }
+
         base.OnModelCreating(modelBuilder);
     }
 
@@ -33,6 +51,21 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     {
         try
         {
+            DateTimeOffset now = _dateTimeProvider.UtcNowOffset;
+
+            foreach (EntityEntry<Entity> entry in ChangeTracker.Entries<Entity>())
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Property(nameof(Entity.CreatedAtUtc)).CurrentValue = now;
+                    entry.Property(nameof(Entity.LastUpdatedAtUtc)).CurrentValue = now;
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    entry.Property(nameof(Entity.LastUpdatedAtUtc)).CurrentValue = now;
+                }
+            }
+
             //AddDomainEventsAsOutboxMessages();
             int result = await base.SaveChangesAsync(cancellationToken);
             return result;

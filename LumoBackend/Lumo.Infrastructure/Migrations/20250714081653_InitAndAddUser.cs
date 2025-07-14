@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Lumo.Infrastructure.Migrations;
 
 /// <inheritdoc />
-public partial class InitAddUser : Migration
+public partial class InitAndAddUser : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
