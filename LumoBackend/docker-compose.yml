@@ -17,8 +17,10 @@ services:
       - lumo_network
     environment:
       - KEYCLOAK__AUTHORITY=http://idprovider:8080/realms/lumoblog
+      - CONNECTIONSTRINGS__DEFAULT=${LUMO_DB_CONNECTION}
+      
 
-  # Set up postgres database
+ # Set up postgres database
   lumo.db:
     image: postgres:17
     container_name: lumo.db

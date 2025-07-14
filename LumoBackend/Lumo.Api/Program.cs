@@ -1,4 +1,9 @@
+using Lumo.Api.Extensions;
+using Lumo.Infrastructure;
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -6,6 +11,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 
 // Add health checks
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddHealthChecks();
 
 WebApplication app = builder.Build();
@@ -19,6 +25,7 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
     });
+    app.ApplyMigrations();
 }
 
 app.MapGet("/", () => "Hello from Lumo Blog API!");

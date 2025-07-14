@@ -8,7 +8,7 @@ public record EmailAddress(string Value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException("Email address cannot be null or empty.", nameof(value));
+            throw new ArgumentException("EmailAddress address cannot be null or empty.", nameof(value));
         }
         if (!Regex.IsMatch(value, @"^\S+@\S+\.\S+$"))
         {
