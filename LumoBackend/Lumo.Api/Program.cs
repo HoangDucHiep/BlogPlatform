@@ -1,4 +1,5 @@
 using Lumo.Api.Extensions;
+using Lumo.Application;
 using Lumo.Infrastructure;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -7,11 +8,16 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+// OpenAPI and Swagger configuration
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 
-// Add health checks
+// Add Configurations
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Add Health checks
 builder.Services.AddHealthChecks();
 
 WebApplication app = builder.Build();
@@ -35,6 +41,7 @@ app.MapHealthChecks("/health");
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

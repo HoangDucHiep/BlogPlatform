@@ -11,7 +11,10 @@ public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, G
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuthenticationService _authenticationService;
 
-    public RegisterUserCommandHandler(IUserRepository userRepository, IUnitOfWork unitOfWork, IAuthenticationService authenticationService)
+    public RegisterUserCommandHandler(
+        IUserRepository userRepository, 
+        IUnitOfWork unitOfWork, 
+        IAuthenticationService authenticationService)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
