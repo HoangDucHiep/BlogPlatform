@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
+using Lumo.Application.Abstractions.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Lumo.Application;
@@ -21,8 +22,12 @@ public static class DependencyInjection
         {
             // Register all handlers from the current assembly
             configuration.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+            
+            configuration.AddOpenBehavior(typeof(LoggingBehavior<,>));
+            configuration.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
 
+        // Register FluentValidation validators from the current assembly
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
 

@@ -34,6 +34,8 @@ if (app.Environment.IsDevelopment())
     app.ApplyMigrations();
 }
 
+app.UseCustomExceptionHandler();
+
 app.MapGet("/", () => "Hello from Lumo Blog API!");
 
 // Add health check endpoint
