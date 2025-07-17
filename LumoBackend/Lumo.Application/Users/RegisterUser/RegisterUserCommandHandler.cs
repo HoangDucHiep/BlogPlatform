@@ -3,7 +3,7 @@ using Lumo.Application.Abstractions.Messaging;
 using Lumo.Domain.Abstractions;
 using Lumo.Domain.Users;
 
-namespace Lumo.Application.Users;
+namespace Lumo.Application.Users.RegisterUser;
 
 public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, Guid>
 {

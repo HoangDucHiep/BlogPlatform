@@ -130,6 +130,14 @@ public static class DependencyInjection
             // Add the delegating handler that automatically adds admin authentication to Keycloak requests
             .AddHttpMessageHandler<AdminAuthorizationDelegatingHandler>();
 
+        // Register the JWT service that handles user authentication via Keycloak
+        services.AddHttpClient<IJwtService, JwtService>((serviceProvider, httpClient) =>
+        {
+            var keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+
+            httpClient.BaseAddress = new Uri(keycloakOptions.TokenUrl);
+        });
+
         // Register the HTTP context accessor for user claims access
         services.AddHttpContextAccessor();
     }
