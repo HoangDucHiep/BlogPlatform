@@ -107,7 +107,6 @@ public static class DependencyInjection
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                // Gọi trực tiếp JwtBearerOptionsSetup từ service provider
                 var authOptions = configuration.GetSection("Authentication").Get<AuthenticationOptions>()!;
 
                 var setup = new JwtBearerOptionsSetup(

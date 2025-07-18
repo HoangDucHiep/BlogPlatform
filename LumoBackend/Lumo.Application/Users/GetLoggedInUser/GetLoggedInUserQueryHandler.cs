@@ -44,7 +44,7 @@ public sealed class GetLoggedInUserQueryHandler
             WHERE identity_id = @IdentityId
             """;
 
-        Console.WriteLine($"Executing SQL query with identity_id = {identityId}");
+        //Console.WriteLine($"Executing SQL query with identity_id = {identityId}");
         
         var user = await connection.QuerySingleAsync<UserResponse>(
             sql,
@@ -53,7 +53,14 @@ public sealed class GetLoggedInUserQueryHandler
                 IdentityId = identityId
             });
 
+        if (user is null)
+        {
+            return Result.Failure<UserResponse>(
+                new Error(
+                    "UserNotFound",
+                    "The user associated with the provided identity ID was not found."));
+        }
 
-        return user;
+        return Result.Success(user);
     }
 }

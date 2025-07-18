@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 namespace Lumo.Application.Abstractions.Authentication;
 public interface IUserContext
 {
-    Guid UserId();
+    Task<Guid> UserId();
     string IdentityId();
 }
