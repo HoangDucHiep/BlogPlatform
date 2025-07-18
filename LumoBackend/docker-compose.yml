@@ -16,8 +16,28 @@ services:
     networks:
       - lumo_network
     environment:
-      - KEYCLOAK__AUTHORITY=http://idprovider:8080/realms/lumoblog
+      # Database Connection
       - CONNECTIONSTRINGS__DEFAULT=${LUMO_DB_CONNECTION}
+      
+      # Authentication Configuration
+      - Authentication__Audience=${Authentication_AUDIENCE}
+      - Authentication__ValidIssuer=${Authentication_VALID_ISSUER}
+      - Authentication__MetadataUrl=${AUTHETICATION_METADATA_URL}
+      - Authentication__RequireHttpsMetadata=false
+      
+      # Keycloak Configuration
+      - Keycloak__BaseUrl=${KEYCLOAK_BASE_URL}
+      - Keycloak__AdminUrl=${KEYCLOAK_ADMIN_URL}
+      - Keycloak__TokenUrl=${KEYCLOAK_TOKEN_URL}
+      - Keycloak__AdminClientId=${KEYCLOAK_ADMIN_CLIENT_ID}
+      - Keycloak__AdminClientSecret=${KEYCLOAK_ADMIN_CLIENT_SECRET}
+      - Keycloak__AuthClientId=${KEYCLOAK_AUTH_CLIENT_ID}
+      - Keycloak__AuthClientSecret=${KEYCLOAK_AUTH_CLIENT_SECRET}
+      
+      # Logging Configuration
+      - Logging__LogLevel__Default=Information
+      - Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - Logging__LogLevel__Lumo.Infrastructure.Authentication=Debug
       
 
  # Set up postgres database
