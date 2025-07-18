@@ -8,7 +8,6 @@ namespace Lumo.Application.Abstractions.Messaging;
 /// </summary>
 public interface IQueryHandler<TQuery, TResponse> : IRequestHandler<TQuery, Result<TResponse>>
     where TQuery : IQuery<TResponse>
-    where TResponse : Entity
 {
 
 }

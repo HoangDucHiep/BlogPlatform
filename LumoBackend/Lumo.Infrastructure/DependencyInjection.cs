@@ -14,7 +14,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Lumo.Infrastructure;
 
@@ -95,20 +97,26 @@ public static class DependencyInjection
     /// - Registers Keycloak integration services
     /// - Sets up HTTP clients for authentication service with proper authorization
     /// </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5404:Do not disable token validation checks", Justification = "<Pending>")]
     private static void AddAuthentication(IServiceCollection services, IConfiguration configuration)
     {
-        // Configure JWT Bearer authentication as the default authentication scheme
-        // This sets up the application to authenticate users using JSON Web Tokens (JWT)
-        // sent in the Authorization header as "Bearer <token>"
-        services
-            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // Sets JWT Bearer as default scheme
-            .AddJwtBearer(); // Adds JWT Bearer handler with default configuration
-
         // Bind application's authentication options from configuration
         services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
 
-        // Configure JWT Bearer options using the application's authentication settings
-        services.ConfigureOptions<JwtBearerOptionsSetup>();
+        services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                // Gọi trực tiếp JwtBearerOptionsSetup từ service provider
+                var authOptions = configuration.GetSection("Authentication").Get<AuthenticationOptions>()!;
+
+                var setup = new JwtBearerOptionsSetup(
+                    Microsoft.Extensions.Options.Options.Create(authOptions),
+                    services.BuildServiceProvider().GetRequiredService<ILogger<JwtBearerOptionsSetup>>()
+                );
+
+                setup.Configure(options);
+            });
 
         // Configure Keycloak integration options from configuration
         services.Configure<KeycloakOptions>(configuration.GetSection("Keycloak"));
@@ -140,5 +148,6 @@ public static class DependencyInjection
 
         // Register the HTTP context accessor for user claims access
         services.AddHttpContextAccessor();
+        services.AddScoped<IUserContext, UserContext>();
     }
 }
