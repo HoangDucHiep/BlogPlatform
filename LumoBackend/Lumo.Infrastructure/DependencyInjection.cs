@@ -4,6 +4,7 @@ using Lumo.Application.Abstractions.Clock;
 using Lumo.Application.Abstractions.Data;
 using Lumo.Application.Abstractions.Email;
 using Lumo.Domain.Abstractions;
+using Lumo.Domain.Stories;
 using Lumo.Domain.Users;
 using Lumo.Infrastructure.Authentication;
 using Lumo.Infrastructure.Clock;
@@ -78,11 +79,13 @@ public static class DependencyInjection
         services.AddSingleton<ISqlConnectionFactory>(_ =>
             new SqlConnectionFactory(connectionString));
 
-        // Register domain repositories for entity access
-        services.AddScoped<IUserRepository, UserRepository>();
-
         // Register UnitOfWork implementation (provided by the DbContext)
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
+
+        // Register domain repositories for entity access
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IStoryRepository, StoryRepository>();
+        services.AddScoped<ISaveChangeVersionRepository, SaveChangeVersionRepository>();
     }
 
     /// <summary>

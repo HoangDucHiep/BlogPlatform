@@ -20,6 +20,18 @@ public sealed class UserContext : IUserContext
         _sqlConnectionFactory = sqlConnectionFactory ?? throw new ArgumentNullException(nameof(sqlConnectionFactory));
     }
 
+    /// <summary>
+    /// Retrieves the user ID associated with the current HTTP context's identity.
+    /// This method queries the database to find the user ID based on the identity ID
+    /// extracted from the HTTP context.
+    /// Throws an exception if the user is not found or if the identity ID is unavailable.  
+    /// </summary>
+    /// <returns>
+    /// A <see cref="Guid"/> representing the user ID.
+    /// </returns>
+    /// <exception cref="ApplicationException">
+    /// Thrown when the user is not found for the given identity ID or if the identity ID is unavailable.
+    /// </exception>
     public async Task<Guid> UserId()
     {
         string identityId = IdentityId();

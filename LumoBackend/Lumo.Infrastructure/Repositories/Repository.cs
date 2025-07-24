@@ -32,7 +32,6 @@ public abstract class Repository<T> where T : Entity
         try
         {
             await _dbContext.Set<T>().AddAsync(entity, cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken);
             return entity;
         }
         catch (OperationCanceledException)
