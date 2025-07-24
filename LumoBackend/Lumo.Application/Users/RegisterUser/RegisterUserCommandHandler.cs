@@ -35,7 +35,7 @@ public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, G
         
         user.SetIdentityId(identity);
 
-        _userRepository.Add(user);
+        await _userRepository.AddAsync(user, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
