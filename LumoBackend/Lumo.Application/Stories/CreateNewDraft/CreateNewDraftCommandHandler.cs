@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Lumo.Application.Abstractions.Authentication;
 using Lumo.Application.Abstractions.Messaging;
+using Lumo.Application.Stories.Dtos;
 using Lumo.Application.Users.RegisterUser;
 using Lumo.Domain.Abstractions;
 using Lumo.Domain.Stories;
@@ -12,7 +13,7 @@ using Lumo.Domain.Users;
 using MediatR;
 
 namespace Lumo.Application.Stories.CreateNewDraft;
-public sealed class CreateNewDraftCommandHandler : ICommandHandler<CreateNewDraftCommand, DraftDto>
+public sealed class CreateNewDraftCommandHandler : ICommandHandler<CreateNewDraftCommand, StoryDto>
 {
     private readonly IUserContext _userContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -33,7 +34,7 @@ public sealed class CreateNewDraftCommandHandler : ICommandHandler<CreateNewDraf
 
 
 
-    public async Task<Result<DraftDto>> Handle(CreateNewDraftCommand request, CancellationToken cancellationToken)
+    public async Task<Result<StoryDto>> Handle(CreateNewDraftCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -48,18 +49,19 @@ public sealed class CreateNewDraftCommandHandler : ICommandHandler<CreateNewDraf
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return new DraftDto
+            return new StoryDto
             {
                 Id = savedDraft.Id,
                 Title = savedDraft.Title,
                 Content = savedDraft.Content,
+                AuthorId = savedDraft.AuthorId,
                 CreatedAtUtc = savedDraft.CreatedAtUtc,
                 LastUpdatedAtUtc = savedDraft.LastUpdatedAtUtc
             };
         }
         catch (ApplicationException)
         {
-            return Result.Failure<DraftDto>(UserErrors.NotFound);
+            return Result.Failure<StoryDto>(UserErrors.NotFound);
         }
     }
 }

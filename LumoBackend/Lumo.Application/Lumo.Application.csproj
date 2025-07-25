@@ -4,12 +4,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Users\NewFolder\**" />
-    <EmbeddedResource Remove="Users\NewFolder\**" />
-    <None Remove="Users\NewFolder\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Dapper" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="MediatR" />
