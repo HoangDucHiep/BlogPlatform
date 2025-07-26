@@ -18,9 +18,9 @@ public sealed record PaginationResult<T> : ICollectionResponse<T>
     public static PaginationResult<T> CreateAsync(
         List<T> source, 
         int page, 
-        int pageSize)
+        int pageSize,
+        int totalCount)
     {
-        int totalCount = source.Count;
 
         return new PaginationResult<T>
         {
