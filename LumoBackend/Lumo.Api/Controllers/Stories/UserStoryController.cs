@@ -2,6 +2,7 @@
 using Lumo.Application.Abstractions.Authentication;
 using Lumo.Application.Stories.CreateNewDraft;
 using Lumo.Application.Stories.GetStories;
+using Lumo.Domain.Stories;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -73,12 +74,6 @@ public class UserStoryController : ControllerBase
 
 public sealed record StoryQueryParameter
 {
-    [FromQuery(Name = "q")]
-    public string? Search { get; set; }
-    [FromQuery(Name = "sort")]
-    public string? Sort { get; init; }
-    public int Page { get; init; } = 1;
-    public int PageSize { get; init; } = 10;
-    // Data shaping
-    public string? Fields { get; init; }
+    [FromQuery(Name = "status")]
+    public StoryStatus? Status { get; set; }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FluentValidation;
 using Lumo.Application.Abstractions.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
+using Dapper.SimpleSqlBuilder.DependencyInjection;
 
 namespace Lumo.Application;
 
@@ -29,6 +30,12 @@ public static class DependencyInjection
 
         // Register FluentValidation validators from the current assembly
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+
+        services.AddSimpleSqlBuilder(
+            configure =>
+            {
+                configure.ReuseParameters = true;
+            });
 
 
         return services;

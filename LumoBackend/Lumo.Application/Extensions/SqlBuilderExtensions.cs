@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dapper;
 
-namespace Lumo.Domain.Stories;
-public enum StoryStatus
+namespace Lumo.Application.Extensions;
+
+
+
+public static class SqlBuilderExtensions
 {
-    Draft = 0,
-    Published = 1,
-    Unlisted = 2,
-    Deleted = 3
+
 }
