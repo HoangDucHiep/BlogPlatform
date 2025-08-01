@@ -10,6 +10,7 @@ using Lumo.Infrastructure.Authentication.Models;
 using Microsoft.Extensions.Options;
 
 namespace Lumo.Infrastructure.Authentication;
+
 public sealed class JwtService : IJwtService
 {
 
@@ -32,12 +33,12 @@ public sealed class JwtService : IJwtService
         {
             var authRequestParams = new KeyValuePair<string, string>[]
             {
-                new("client_id", _keycloakOptions.AuthClientId),
-                new("client_secret", _keycloakOptions.AuthClientSecret),
-                new("scope", "openid profile email offline_access"),
-                new("grant_type", "password"),
-                new("username", email),
-                new("password", password)
+            new("client_id", _keycloakOptions.AuthClientId),
+            new("client_secret", _keycloakOptions.AuthClientSecret),
+            new("scope", "openid profile email offline_access"),
+            new("grant_type", "password"),
+            new("username", email),
+            new("password", password)
             };
 
             using var authRequestBody = new FormUrlEncodedContent(authRequestParams);
@@ -46,6 +47,12 @@ public sealed class JwtService : IJwtService
                 "",
                 authRequestBody,
                 cancellationToken);
+
+            // Kiểm tra status code trước khi EnsureSuccessStatusCode
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return Result.Failure<string>(AuthenticationFailed);
+            }
 
             response.EnsureSuccessStatusCode();
 
@@ -59,6 +66,10 @@ public sealed class JwtService : IJwtService
             return Result.Success(authorizationResponse.AccessToken);
         }
         catch (HttpRequestException)
+        {
+            return Result.Failure<string>(AuthenticationFailed);
+        }
+        catch (TaskCanceledException)
         {
             return Result.Failure<string>(AuthenticationFailed);
         }

@@ -1,11 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using Lumo.Api.Extensions;
 using Lumo.Application.Abstractions.Authentication;
 using Lumo.Application.Stories.CreateNewDraft;
 using Lumo.Application.Stories.GetStories;
 using Lumo.Domain.Stories;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lumo.Api.Controllers.Stories;
@@ -27,10 +26,6 @@ public class UserStoryController : ControllerBase
     [HttpPost("draft")]
     public async Task<IActionResult> CreateDraft([FromBody] CreateNewDraftRequest request, CancellationToken cancellationToken = default)
     {
-        if (request.Title == null || request.Content == null)
-        {
-            return BadRequest("Title and Content cannot be null.");
-        }
 
         var command = new CreateNewDraftCommand(
             request.Title,
@@ -42,7 +37,7 @@ public class UserStoryController : ControllerBase
 
         if (result.IsFailure)
         {
-            return BadRequest(result.Error);
+            return this.ToProblemDetails(result);
         }
 
         return CreatedAtAction(nameof(CreateDraft), new { id = result.Value.Id }, result.Value);
@@ -60,12 +55,7 @@ public class UserStoryController : ControllerBase
 
         if (result.IsFailure)
         {
-            return BadRequest(result.Error);
-        }
-
-        if (result.Value is null)
-        {
-            return NotFound("No stories found.");
+            return this.ToProblemDetails(result);
         }
 
         return Ok(result.Value);

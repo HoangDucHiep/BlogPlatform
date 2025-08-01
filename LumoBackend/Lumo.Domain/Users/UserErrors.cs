@@ -25,5 +25,7 @@ public static class UserErrors
         "The provided credentials were invalid");
 
 
-
+    public static readonly Error AuthenticationFailed = new(
+    "104",
+    "Invalid email or password provided.");
 }

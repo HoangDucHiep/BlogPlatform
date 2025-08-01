@@ -1,23 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace Lumo.Application.Abstractions.Dtos;
 public sealed record PaginationResult<T> : ICollectionResponse<T>
 {
     public List<T> Items { get; init; }
-    public int Page { get; init; }
-    public int PageSize { get; init; }
-    public int TotalCount { get; init; }
-    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
-    public bool HasPreviousPage => Page > 1;
-    public bool HasNextPage => Page < TotalPages;
+    [JsonPropertyName("metadata")]
+    public PaginationMetadata MetaData { get; init; }
 
     public static PaginationResult<T> CreateAsync(
-        List<T> source, 
-        int page, 
+        List<T> source,
+        int page,
         int pageSize,
         int totalCount)
     {
@@ -25,9 +17,22 @@ public sealed record PaginationResult<T> : ICollectionResponse<T>
         return new PaginationResult<T>
         {
             Items = source,
-            Page = page,
-            PageSize = pageSize,
-            TotalCount = totalCount
+            MetaData = new PaginationMetadata
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            }
         };
     }
+}
+
+public sealed record PaginationMetadata
+{
+    public int Page { get; init; }
+    public int PageSize { get; init; }
+    public int TotalCount { get; init; }
+    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
+    public bool HasPreviousPage => Page > 1;
+    public bool HasNextPage => Page < TotalPages;
 }

@@ -42,7 +42,8 @@ public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationR
             """)
             .From($"stories s");
 
-        builder.Pagination(request.Page, request.PageSize);
+        builder.ApplyPagination(request.Page, request.PageSize);
+        builder.ApplySorting(request.Sort);
 
         // Tạo class để map kết quả với TotalCount
         var (stories, totalCount) = await PaginationHelper.GetPaginatedResult<StoryDto>(
@@ -56,13 +57,11 @@ public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationR
             return Result.Failure<PaginationResult<StoryDto>>(StoryError.NotFound);
         }
 
-        var paginationResult = new PaginationResult<StoryDto>
-        {
-            Items = stories.ToList(),
-            Page = request.Page,
-            PageSize = request.PageSize,
-            TotalCount = totalCount
-        };
+        var paginationResult = PaginationResult<StoryDto>.CreateAsync(
+            stories.ToList(),
+            request.Page,
+            request.PageSize,
+            totalCount);
 
         return Result.Success(paginationResult);
     }

@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Lumo.Application.Abstractions.Authentication;
+﻿using Lumo.Application.Abstractions.Authentication;
 using Lumo.Application.Abstractions.Messaging;
 using Lumo.Application.Stories.Dtos;
-using Lumo.Application.Users.RegisterUser;
 using Lumo.Domain.Abstractions;
 using Lumo.Domain.Stories;
 using Lumo.Domain.Users;
-using MediatR;
 
 namespace Lumo.Application.Stories.CreateNewDraft;
 public sealed class CreateNewDraftCommandHandler : ICommandHandler<CreateNewDraftCommand, StoryDto>
@@ -38,6 +31,12 @@ public sealed class CreateNewDraftCommandHandler : ICommandHandler<CreateNewDraf
     {
         try
         {
+
+            if (request.Title == null || request.Content == null)
+            {
+                return Result.Failure<StoryDto>(StoryError.InvalidInput);
+            }
+
             var loggedInUserId = await _userContext.UserId();
 
             var newDraft = Story.CreateDraft(loggedInUserId, request.Title, request.Content);

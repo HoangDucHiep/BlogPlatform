@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
+﻿using System.Data;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Dapper;
 using Dapper.SimpleSqlBuilder.FluentBuilder;
-using Lumo.Application.Abstractions.Data;
-using MediatR;
 
 namespace Lumo.Application.Extensions;
 
@@ -22,7 +15,7 @@ public static class PaginationHelper
         @"\b(?:INNER\s+JOIN|LEFT\s+JOIN|RIGHT\s+JOIN|FULL\s+JOIN|CROSS\s+JOIN|JOIN)\b",
         RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled);
 
-    public static ISelectFromBuilder Pagination(this ISelectFromBuilder builder, int page, int pageSize)
+    public static ISelectFromBuilder ApplyPagination(this ISelectFromBuilder builder, int page, int pageSize)
     {
         if (page < 1)
         {
@@ -108,10 +101,10 @@ public static class PaginationHelper
     /// <param name="parameters">Query parameters</param>
     /// <returns>Query results and total count</returns>
     public static async Task<(IEnumerable<T> Data, int TotalCount)> GetPaginatedResult<T>(
-        string sqlQuery,
-        string expectedTableName,
-        IDbConnection connection,
-        object? parameters = null)
+    string sqlQuery,
+    string expectedTableName,
+    IDbConnection connection,
+    object? parameters = null)
     {
         if (string.IsNullOrWhiteSpace(sqlQuery))
         {
@@ -125,7 +118,6 @@ public static class PaginationHelper
 
         // Validate single table query
         var foundTableName = FindSingleTableName(sqlQuery);
-
         if (foundTableName == null)
         {
             throw new InvalidOperationException("Query contains multiple tables or JOINs. Single table queries only.");
@@ -137,14 +129,15 @@ public static class PaginationHelper
                 $"Table name mismatch. Expected: '{expectedTableName}', Found: '{foundTableName}'");
         }
 
-        // Combine both queries into a single multi-query call
+        // Chuẩn hóa sqlQuery
+        var normalizedSqlQuery = Regex.Replace(sqlQuery.Trim(), @"[\r\n\s]+", " ");
+
+        // Chạy truy vấn phân trang
+        var data = await connection.QueryAsync<T>(normalizedSqlQuery, parameters);
+
+        // Chạy truy vấn đếm
         var countSql = $"SELECT COUNT(*) FROM {expectedTableName}";
-        var combinedSql = $"{sqlQuery}; {countSql}";
-
-        using var multiQuery = await connection.QueryMultipleAsync(combinedSql, parameters);
-
-        var data = await multiQuery.ReadAsync<T>();
-        var totalCount = await multiQuery.ReadSingleAsync<int>();
+        var totalCount = await connection.ExecuteScalarAsync<int>(countSql, parameters);
 
         return (data, totalCount);
     }

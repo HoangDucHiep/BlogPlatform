@@ -14,6 +14,11 @@ builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 
 // Add Configurations
+//builder.Services.Configure<JsonOptions>(options =>
+//{
+//    options.SerializerOptions.Converters.Add(new ResultJsonConverterFactory());
+//});
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 

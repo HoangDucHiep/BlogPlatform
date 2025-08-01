@@ -3,6 +3,7 @@ using Lumo.Application.Abstractions.Authentication;
 using Lumo.Application.Abstractions.Data;
 using Lumo.Application.Abstractions.Messaging;
 using Lumo.Domain.Abstractions;
+using Lumo.Domain.Users;
 
 namespace Lumo.Application.Users.GetLoggedInUser;
 public sealed class GetLoggedInUserQueryHandler
@@ -50,11 +51,7 @@ public sealed class GetLoggedInUserQueryHandler
 
         if (user is null)
         {
-            return Result.Failure<UserResponse>(
-
-                new Error(
-                    "UserNotFound",
-                    "The user associated with the provided identity ID was not found."));
+            return Result.Failure<UserResponse>(UserErrors.NotFound);
         }
 
         return Result.Success(user);

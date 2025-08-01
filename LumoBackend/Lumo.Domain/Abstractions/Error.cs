@@ -4,9 +4,9 @@
 /// Record representing an error with a code and name.
 /// </summary>
 /// <param name="Code"></param>
-/// <param name="Name"></param>
-public record Error(string Code, string Name)
+/// <param name="Message"></param>
+public record Error(string Code, string Message)
 {
-    public static Error None = new(string.Empty, string.Empty);
+    public static Error? None; // null
     public static Error NullValue = new("Error.NullValue", "Null value was provided");
 }

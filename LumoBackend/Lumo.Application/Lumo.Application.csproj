@@ -11,12 +11,18 @@
     <PackageReference Include="MediatR" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Npgsql" />
     <PackageReference Include="Serilog" />
   </ItemGroup>
 	
 
   <ItemGroup>
     <ProjectReference Include="..\Lumo.Domain\Lumo.Domain.csproj" />
+  </ItemGroup>
+	
+
+  <ItemGroup>
+    <Folder Include="Utils\" />
   </ItemGroup>
 
 </Project>

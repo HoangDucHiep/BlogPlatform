@@ -1,7 +1,7 @@
-﻿using Lumo.Application.Stories.GetStories;
+﻿using Lumo.Api.Extensions;
+using Lumo.Application.Stories.GetStories;
 using Lumo.Domain.Stories;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lumo.Api.Controllers.Stories;
@@ -21,13 +21,16 @@ public class PublicStoryController : ControllerBase
     {
         var query = new GetStoriesQuery
         {
-            Status = StoryStatus.Published
+            Status = StoryStatus.Published,
+            Sort = "title desc"
         };
         var result = await _sender.Send(query, cancellationToken);
+
         if (result.IsFailure)
         {
-            return BadRequest(result.Error);
+            return this.ToProblemDetails(result);
         }
+
         return Ok(result.Value);
     }
 }

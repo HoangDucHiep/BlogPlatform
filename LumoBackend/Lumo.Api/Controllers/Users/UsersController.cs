@@ -1,13 +1,9 @@
-﻿using System.Threading.Tasks;
-using Lumo.Application.Abstractions.Authentication;
+﻿using Lumo.Api.Extensions;
 using Lumo.Application.Users.GetLoggedInUser;
 using Lumo.Application.Users.LoginUser;
 using Lumo.Application.Users.RegisterUser;
-using Lumo.Domain.Abstractions;
-using Lumo.Infrastructure.Authentication;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lumo.Api.Controllers.Users;
@@ -40,7 +36,7 @@ public class UsersController : ControllerBase
 
         if (result.IsFailure)
         {
-            return BadRequest(result.Error);
+            return this.ToProblemDetails(result);
         }
 
         return Ok(result.Value);
@@ -60,7 +56,7 @@ public class UsersController : ControllerBase
 
         if (result.IsFailure)
         {
-            return BadRequest(result.Error);
+            return this.ToProblemDetails(result);
         }
 
         return Ok(result.Value);
@@ -76,7 +72,7 @@ public class UsersController : ControllerBase
 
         if (result.IsFailure)
         {
-            return BadRequest(result.Error);
+            return this.ToProblemDetails(result);
         }
 
         return Ok(result.Value);

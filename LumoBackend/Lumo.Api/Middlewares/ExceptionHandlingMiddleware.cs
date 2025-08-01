@@ -1,6 +1,5 @@
-﻿
+﻿using Lumo.Api.Helpers;
 using Lumo.Application.Exceptions;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Lumo.Api.Middlewares;
 
@@ -20,58 +19,65 @@ public class ExceptionHandlingMiddleware
         try
         {
             await _next(context);
+
+            if (context.Response.StatusCode == StatusCodes.Status401Unauthorized && !context.Response.HasStarted)
+            {
+                var detail = DetermineUnauthorizedReason(context);
+                var problemDetails = ProblemDetailsFactory.CreateForUnauthorized(
+                    detail,
+                    context.Request.Path.Value,
+                    context.TraceIdentifier);
+
+                context.Response.ContentType = "application/problem+json";
+                await context.Response.WriteAsJsonAsync(problemDetails);
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception occurred: {Message}", ex.Message);
 
-            var exceptionDetails = GetExceptionDetails(ex);
-
-            var problemDetails = new ProblemDetails
+            // Get validation errors if available
+            IEnumerable<object>? validationErrors = null;
+            if (ex is ValidationException validationEx)
             {
-                Status = exceptionDetails.Status,
-                Type = exceptionDetails.Type,
-                Title = exceptionDetails.Title,
-                Detail = exceptionDetails.Detail,
-            };
-
-            if (exceptionDetails.Errors is not null)
-            {
-                problemDetails.Extensions["errors"] = exceptionDetails.Errors;
+                validationErrors = validationEx.Errors;
             }
 
-            context.Response.StatusCode = exceptionDetails.Status;
+            // Create problem details from the exception
+            var problemDetails = ProblemDetailsFactory.CreateFromException(
+                ex,
+                context.Request.Path.Value,
+                context.TraceIdentifier,
+                validationErrors);
+
+            context.Response.StatusCode = problemDetails.Status ?? StatusCodes.Status500InternalServerError;
+            context.Response.ContentType = "application/problem+json";
 
             await context.Response.WriteAsJsonAsync(problemDetails);
         }
     }
 
-    private static ExceptionDetails GetExceptionDetails(Exception ex)
+    private static string DetermineUnauthorizedReason(HttpContext context)
     {
+        var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
 
-        return ex switch
-        { 
-            ValidationException validationException => new ExceptionDetails(
-                StatusCodes.Status400BadRequest,
-                "ValidationFailure",
-                "Validation error",
-                "One or more validation errors has occurred",
-                validationException.Errors),
-            _ => new ExceptionDetails(
-                StatusCodes.Status500InternalServerError,
-                "ServerError",
-                "Server Error",
-                "An unexpected error occurred.",
-                null)
-        };
+        if (string.IsNullOrEmpty(authHeader))
+        {
+            return "No authorization token provided. Please include a valid Bearer token in the Authorization header.";
+        }
 
+        if (!authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Invalid authorization header format. Expected 'Bearer <token>'.";
+        }
 
+        return "The provided authorization token is invalid or expired. Please obtain a new token.";
     }
 }
 
 public record ExceptionDetails(
-        int Status,
-        string Type,
-        string Title,
-        string Detail,
-        IEnumerable<object>? Errors);
+    int Status,
+    string Type,
+    string Title,
+    string Detail,
+    IEnumerable<object>? Errors);
