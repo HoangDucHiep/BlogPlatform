@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Dapper;
 using Lumo.Application.Abstractions.Authentication;
 using Lumo.Application.Abstractions.Data;
@@ -45,7 +40,7 @@ public sealed class GetLoggedInUserQueryHandler
             """;
 
         //Console.WriteLine($"Executing SQL query with identity_id = {identityId}");
-        
+
         var user = await connection.QuerySingleAsync<UserResponse>(
             sql,
             new
@@ -56,6 +51,7 @@ public sealed class GetLoggedInUserQueryHandler
         if (user is null)
         {
             return Result.Failure<UserResponse>(
+
                 new Error(
                     "UserNotFound",
                     "The user associated with the provided identity ID was not found."));

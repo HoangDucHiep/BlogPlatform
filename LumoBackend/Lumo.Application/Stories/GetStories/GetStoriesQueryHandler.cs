@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Dapper;
-using Dapper.SimpleSqlBuilder;
-using Dapper.SimpleSqlBuilder.FluentBuilder;
+﻿using Dapper.SimpleSqlBuilder;
 using Lumo.Application.Abstractions.Data;
 using Lumo.Application.Abstractions.Dtos;
 using Lumo.Application.Abstractions.Messaging;
@@ -52,33 +45,20 @@ public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationR
         builder.Pagination(request.Page, request.PageSize);
 
         // Tạo class để map kết quả với TotalCount
-        var result = await connection.QueryAsync<StoryDto>(builder.Sql, builder.Parameters);
-        var totalCount = await PaginationHelper.GetTotalCount("stories", connection);
+        var (stories, totalCount) = await PaginationHelper.GetPaginatedResult<StoryDto>(
+        builder.Sql,
+        "stories",
+        connection,
+        builder.Parameters);
 
-        if (result == null || !result.Any())
+        if (!stories.Any())
         {
             return Result.Failure<PaginationResult<StoryDto>>(StoryError.NotFound);
         }
 
-        var stories = result.Select(r => new StoryDto
-        {
-            Id = r.Id,
-            Title = r.Title,
-            Content = r.Content,
-            AuthorId = r.AuthorId,
-            PublicationId = r.PublicationId,
-            Status = r.Status,
-            PublishedAtUtc = r.PublishedAtUtc,
-            IsPaywalled = r.IsPaywalled,
-            ReadTimeCalculated = r.ReadTimeCalculated,
-            CreatedAtUtc = r.CreatedAtUtc,
-            LastUpdatedAtUtc = r.LastUpdatedAtUtc
-        }).ToList();
-
-
         var paginationResult = new PaginationResult<StoryDto>
         {
-            Items = stories,
+            Items = stories.ToList(),
             Page = request.Page,
             PageSize = request.PageSize,
             TotalCount = totalCount
@@ -86,5 +66,4 @@ public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationR
 
         return Result.Success(paginationResult);
     }
-
 }
