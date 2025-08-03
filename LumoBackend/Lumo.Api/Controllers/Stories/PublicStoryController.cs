@@ -22,7 +22,7 @@ public class PublicStoryController : ControllerBase
         var query = new GetStoriesQuery
         {
             Status = StoryStatus.Published,
-            Sort = "title desc"
+            Sort = "title desc, s.created_at_utc ASC"
         };
         var result = await _sender.Send(query, cancellationToken);
 

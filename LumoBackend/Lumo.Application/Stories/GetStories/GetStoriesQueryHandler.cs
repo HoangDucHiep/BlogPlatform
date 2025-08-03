@@ -1,8 +1,7 @@
-﻿using Dapper.SimpleSqlBuilder;
+﻿using Dapper;
 using Lumo.Application.Abstractions.Data;
 using Lumo.Application.Abstractions.Dtos;
 using Lumo.Application.Abstractions.Messaging;
-using Lumo.Application.Extensions;
 using Lumo.Application.Stories.Dtos;
 using Lumo.Domain.Abstractions;
 using Lumo.Domain.Stories;
@@ -26,31 +25,40 @@ public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationR
     {
         using var connection = _sqlConnectionFactory.CreateConnection();
 
-        var builder = SimpleBuilder.CreateFluent()
-            .Select($"""
-            s.id AS Id,
-            s.title AS Title,
-            s.content AS Content,
-            s.author_id AS AuthorId,
-            s.publication_id AS PublicationId,
-            s.status AS Status,
-            s.published_at_utc AS PublishedAtUtc,
-            s.is_paywalled AS IsPaywalled,
-            s.read_time_calculated AS ReadTimeCalculated,
-            s.created_at_utc AS CreatedAtUtc,
-            s.last_updated_at_utc AS LastUpdatedAtUtc
-            """)
-            .From($"stories s");
+        string mainSql = $"""
+            SELECT
+                s.id AS Id,
+                s.title AS Title,
+                s.content AS Content,
+                s.author_id AS AuthorId,
+                s.publication_id AS PublicationId,
+                s.status AS Status,
+                s.published_at_utc AS PublishedAtUtc,
+                s.is_paywalled AS IsPaywalled,
+                s.read_time_calculated AS ReadTimeCalculated,
+                s.created_at_utc AS CreatedAtUtc,
+                s.last_updated_at_utc AS LastUpdatedAtUtc
+            FROM stories AS s
+            ORDER BY {request.Sort ?? "s.created_at_utc DESC"}
+            LIMIT @PageSize OFFSET @Offset
+            """;
 
-        builder.ApplyPagination(request.Page, request.PageSize);
-        builder.ApplySorting(request.Sort);
+        string countSql = """
+            SELECT COUNT(*) FROM stories AS s
+            """;
 
-        // Tạo class để map kết quả với TotalCount
-        var (stories, totalCount) = await PaginationHelper.GetPaginatedResult<StoryDto>(
-        builder.Sql,
-        "stories",
-        connection,
-        builder.Parameters);
+        var parameters = new
+        {
+            request.PageSize,
+            Offset = (request.Page - 1) * request.PageSize,
+        };
+
+        // Combine both queries into one string separated by semicolon
+        string combinedSql = $"{mainSql};{countSql}";
+
+        var gridReader = await connection.QueryMultipleAsync(combinedSql, parameters);
+        var stories = (await gridReader.ReadAsync<StoryDto>()).ToList();
+        var totalCount = await gridReader.ReadFirstAsync<int>();
 
         if (!stories.Any())
         {
@@ -58,10 +66,11 @@ public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationR
         }
 
         var paginationResult = PaginationResult<StoryDto>.CreateAsync(
-            stories.ToList(),
+            stories,
+            totalCount,
             request.Page,
-            request.PageSize,
-            totalCount);
+            request.PageSize
+        );
 
         return Result.Success(paginationResult);
     }
