@@ -9,8 +9,10 @@ namespace Lumo.Application.Stories.GetStories;
 /// <summary>
 /// Query to get a paginated list of stories with optional filtering and sorting.
 /// </summary>
-public record GetStoriesQuery : IQuery<PaginationResult<StoryDto>>, IPageableRequest, ISortableRequest
+public record GetStoriesQuery : IQuery<PaginationResult<StoryDto>>, IPageableRequest, ISortableRequest, ISearchRequest
 {
+
+    /* -- Filtering -- */
     /// <summary>
     /// Filter stories by author ID.
     /// </summary>
@@ -30,6 +32,14 @@ public record GetStoriesQuery : IQuery<PaginationResult<StoryDto>>, IPageableReq
     public Guid? PublicationId { get; init; }
 
     /// <summary>
+    /// Filter stories by paywall status.
+    /// </summary>
+    [FromQuery(Name = "isPaywalled")]
+    public bool? IsPaywalled { get; init; }
+
+
+    /* -- Pagination -- */
+    /// <summary>
     /// Page number (1-based). Default is 1.
     /// </summary>
     [FromQuery(Name = "page")]
@@ -41,10 +51,12 @@ public record GetStoriesQuery : IQuery<PaginationResult<StoryDto>>, IPageableReq
     [FromQuery(Name = "pageSize")]
     public int PageSize { get; init; } = 10;
 
-    /// <summary>
-    /// Sorting specification in format: property [asc|desc],property2 [asc|desc]
-    /// Example: sort=title desc,publishedAtUtc,authorId
-    /// </summary>
+
+    // Change the property type to nullable string to match ISortableRequest.Sort
     [FromQuery(Name = "sort")]
-    public string Sort { get; init; } = string.Empty;
+    public string Sort { get; init; } = "createdAtUtc DESC";
+
+    /* -- Searching -- */
+    [FromQuery(Name = "q")]
+    public string? SearchQuery { get; init; }
 }

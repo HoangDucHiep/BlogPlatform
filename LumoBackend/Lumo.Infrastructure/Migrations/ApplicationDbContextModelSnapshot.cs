@@ -117,6 +117,12 @@ namespace Lumo.Infrastructure.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("read_time_calculated");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("slug");
+
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -140,6 +146,10 @@ namespace Lumo.Infrastructure.Migrations
 
                     b.HasIndex("PublishedAtUtc")
                         .HasDatabaseName("ix_stories_published_at_utc");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Stories_Slug");
 
                     b.HasIndex("Status")
                         .HasDatabaseName("ix_stories_status");

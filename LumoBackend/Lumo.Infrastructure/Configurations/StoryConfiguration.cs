@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Lumo.Domain.Stories;
+﻿using Lumo.Domain.Stories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,6 +13,10 @@ internal sealed class StoryConfiguration : IEntityTypeConfiguration<Story>
 
         builder.Property(s => s.Title)
             .HasMaxLength(200)
+            .IsRequired(true);
+
+        builder.Property(s => s.Slug)
+            .HasMaxLength(300)
             .IsRequired(true);
 
         builder.Property(s => s.Content)
@@ -66,5 +65,8 @@ internal sealed class StoryConfiguration : IEntityTypeConfiguration<Story>
         builder.HasIndex(s => s.Status);
         builder.HasIndex(s => s.PublishedAtUtc);
         builder.HasIndex(s => new { s.AuthorId, s.Status });
+        builder.HasIndex(builder => builder.Slug)
+            .IsUnique()
+            .HasDatabaseName("IX_Stories_Slug");
     }
 }
