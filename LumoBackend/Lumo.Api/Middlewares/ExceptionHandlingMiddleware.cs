@@ -32,6 +32,18 @@ public class ExceptionHandlingMiddleware
                 await context.Response.WriteAsJsonAsync(problemDetails);
             }
         }
+        catch (SortFieldException ex)
+        {
+            _logger.LogError(ex, "Sort field exception occurred: {Message}", ex.Message);
+            var problemDetails = ProblemDetailsFactory.CreateFromException(
+                ex,
+                context.Request.Path.Value,
+                context.TraceIdentifier);
+            context.Response.StatusCode = problemDetails.Status ?? StatusCodes.Status400BadRequest;
+            context.Response.ContentType = "application/problem+json";
+            await context.Response.WriteAsJsonAsync(problemDetails);
+            return;
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception occurred: {Message}", ex.Message);

@@ -158,6 +158,10 @@ public static class ProblemDetailsFactory
     {
         return ex switch
         {
+            SortFieldException sortEx =>
+                ("sort-field-error", "Invalid Sort Field", StatusCodes.Status400BadRequest,
+                sortEx.Message),
+                
             ValidationException validationEx =>
                 ("validation-error", "Validation Failed", StatusCodes.Status400BadRequest,
                 "One or more validation errors occurred"),

@@ -1,6 +1,5 @@
 ﻿using Lumo.Api.Extensions;
 using Lumo.Application.Stories.GetStories;
-using Lumo.Domain.Stories;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,13 +16,8 @@ public class PublicStoryController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetPublicStories(CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetPublicStories(GetStoriesQuery query, CancellationToken cancellationToken = default)
     {
-        var query = new GetStoriesQuery
-        {
-            Status = StoryStatus.Published,
-            Sort = "title desc, s.created_at_utc ASC"
-        };
         var result = await _sender.Send(query, cancellationToken);
 
         if (result.IsFailure)

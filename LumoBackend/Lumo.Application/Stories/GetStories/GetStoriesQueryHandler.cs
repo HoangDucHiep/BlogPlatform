@@ -2,6 +2,7 @@
 using Lumo.Application.Abstractions.Data;
 using Lumo.Application.Abstractions.Dtos;
 using Lumo.Application.Abstractions.Messaging;
+using Lumo.Application.Helpers;
 using Lumo.Application.Stories.Dtos;
 using Lumo.Domain.Abstractions;
 using Lumo.Domain.Stories;
@@ -25,6 +26,14 @@ public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationR
     {
         using var connection = _sqlConnectionFactory.CreateConnection();
 
+        string sortQuery = SortingHelper.ParseSortQuery(request.Sort, new List<string>
+        {
+            "title",
+            "created_at_utc",
+            "content",
+            "author_id",
+        });
+
         string mainSql = $"""
             SELECT
                 s.id AS Id,
@@ -39,7 +48,7 @@ public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationR
                 s.created_at_utc AS CreatedAtUtc,
                 s.last_updated_at_utc AS LastUpdatedAtUtc
             FROM stories AS s
-            ORDER BY {request.Sort ?? "s.created_at_utc DESC"}
+            ORDER BY {sortQuery ?? "s.created_at_utc DESC"}
             LIMIT @PageSize OFFSET @Offset
             """;
 
@@ -67,9 +76,9 @@ public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationR
 
         var paginationResult = PaginationResult<StoryDto>.CreateAsync(
             stories,
-            totalCount,
             request.Page,
-            request.PageSize
+            request.PageSize,
+            totalCount
         );
 
         return Result.Success(paginationResult);

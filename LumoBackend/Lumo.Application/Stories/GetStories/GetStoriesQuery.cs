@@ -14,16 +14,19 @@ public record GetStoriesQuery : IQuery<PaginationResult<StoryDto>>, IPageableReq
     /// <summary>
     /// Filter stories by author ID.
     /// </summary>
+    [FromQuery(Name = "authorId")]
     public Guid? AuthorId { get; init; }
 
     /// <summary>
     /// Filter stories by status (Draft, Published, etc.).
     /// </summary>
+    [FromQuery(Name = "status")]
     public StoryStatus? Status { get; init; }
 
     /// <summary>
     /// Filter stories by publication ID.
     /// </summary>
+    [FromQuery(Name = "publicationId")]
     public Guid? PublicationId { get; init; }
 
     /// <summary>
