@@ -1,7 +1,7 @@
-﻿using Dapper;
-using Lumo.Application.Abstractions.Data;
+﻿using Lumo.Application.Abstractions.Data;
 using Lumo.Application.Abstractions.Dtos;
 using Lumo.Application.Abstractions.Messaging;
+using Lumo.Application.Extensions;
 using Lumo.Application.Helpers;
 using Lumo.Application.Stories.Dtos;
 using Lumo.Domain.Abstractions;
@@ -103,12 +103,16 @@ public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationR
             SearchQuery = request.SearchQuery?.Trim() ?? string.Empty
         };
 
-        // Combine both queries into one string separated by semicolon
-        string combinedSql = $"{mainSql};{countSql}";
 
-        var gridReader = await connection.QueryMultipleAsync(combinedSql, parameters);
-        var stories = (await gridReader.ReadAsync<StoryDto>()).ToList();
-        var totalCount = await gridReader.ReadFirstAsync<int>();
+        List<StoryDto> stories;
+        int totalCount;
+
+        (stories, totalCount) = await connection.GetQueryWithPagination<StoryDto>(
+            mainSql,
+            parameters,
+            "stories As s",
+            whereClause
+        );
 
         var paginationResult = PaginationResult<StoryDto>.CreateAsync(
             stories,
