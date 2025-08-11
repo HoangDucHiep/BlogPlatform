@@ -54,7 +54,7 @@ public record GetStoriesQuery : IQuery<PaginationResult<StoryDto>>, IPageableReq
 
     // Change the property type to nullable string to match ISortableRequest.Sort
     [FromQuery(Name = "sort")]
-    public string Sort { get; init; } = "createdAtUtc DESC";
+    public string Sort { get; init; } = "created_at_utc DESC";
 
     /* -- Searching -- */
     [FromQuery(Name = "q")]
