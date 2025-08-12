@@ -276,6 +276,71 @@ public class SqlBuilder
         return this;
     }
 
+
+    // Thêm các methods này vào class SqlBuilder
+
+    /// <summary>
+    /// Adds a full-text search condition using PostgreSQL's tsvector and tsquery.
+    /// </summary>
+    /// <param name="searchQuery">The search query</param>
+    /// <param name="searchVectorColumn">The tsvector column to search (e.g., "search_vector")</param>
+    /// <param name="searchType">The type of search: "plain", "phrase", "websearch" (default: "websearch")</param>
+    /// <param name="parameterName">The parameter name for the search query (default: "SearchQuery")</param>
+    /// <param name="logicalOperator">The logical operator (AND/OR) - defaults to AND</param>
+    public SqlBuilder FullTextSearch(string searchQuery, string searchVectorColumn, string searchType = "websearch", string parameterName = "SearchQuery", string logicalOperator = "AND")
+    {
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            string searchClause = searchType.ToLowerInvariant() switch
+            {
+                "plain" => $"{searchVectorColumn} @@ plainto_tsquery('english', @{parameterName})",
+                "phrase" => $"{searchVectorColumn} @@ phraseto_tsquery('english', @{parameterName})",
+                "websearch" => $"{searchVectorColumn} @@ websearch_to_tsquery('english', @{parameterName})",
+                _ => $"{searchVectorColumn} @@ websearch_to_tsquery('english', @{parameterName})"
+            };
+
+            _whereConditions.Add(new WhereClause(searchClause, logicalOperator));
+            _parameters[parameterName] = searchQuery.Trim();
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a full-text search condition with ranking for result ordering.
+    /// This method both filters and adds a rank field to SELECT for ordering.
+    /// </summary>
+    /// <param name="searchQuery">The search query</param>
+    /// <param name="searchVectorColumn">The tsvector column to search</param>
+    /// <param name="rankAlias">The alias for the rank field (default: "search_rank")</param>
+    /// <param name="searchType">The type of search: "plain", "phrase", "websearch" (default: "websearch")</param>
+    /// <param name="parameterName">The parameter name for the search query (default: "SearchQuery")</param>
+    /// <param name="logicalOperator">The logical operator (AND/OR) - defaults to AND</param>
+    public SqlBuilder FullTextSearchWithRank(string searchQuery, string searchVectorColumn, string rankAlias = "search_rank", string searchType = "websearch", string parameterName = "SearchQuery", string logicalOperator = "AND")
+    {
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            string tsqueryFunction = searchType.ToLowerInvariant() switch
+            {
+                "plain" => "plainto_tsquery",
+                "phrase" => "phraseto_tsquery",
+                "websearch" => "websearch_to_tsquery",
+                _ => "websearch_to_tsquery"
+            };
+
+            // Add rank to SELECT
+            var rankField = $"ts_rank({searchVectorColumn}, {tsqueryFunction}('english', @{parameterName})) AS {rankAlias}";
+            _selectFields.Add(rankField);
+
+            // Add search condition to WHERE
+            var searchClause = $"{searchVectorColumn} @@ {tsqueryFunction}('english', @{parameterName})";
+            _whereConditions.Add(new WhereClause(searchClause, logicalOperator));
+
+            _parameters[parameterName] = searchQuery.Trim();
+        }
+        return this;
+    }
+
+
     /// <summary>
     /// Builds and returns the complete SQL query string.
     /// </summary>
