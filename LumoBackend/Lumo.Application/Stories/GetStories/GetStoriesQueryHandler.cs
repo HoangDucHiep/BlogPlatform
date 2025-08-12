@@ -27,6 +27,7 @@ public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationR
         using var connection = _sqlConnectionFactory.CreateConnection();
 
         // Build SQL query using SqlBuilder
+
         var sqlBuilder = SqlBuilder.Create()
             .Select(
                 "s.id AS Id",
@@ -46,10 +47,20 @@ public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationR
             .WhereIf(request.Status.HasValue, "s.status = @Status", "Status", request.Status!)
             .WhereIf(request.AuthorId.HasValue, "s.author_id = @AuthorId", "AuthorId", request.AuthorId!)
             .WhereIf(request.PublicationId.HasValue, "s.publication_id = @PublicationId", "PublicationId", request.PublicationId!)
-            .WhereIf(request.IsPaywalled.HasValue, "s.is_paywalled = @IsPaywalled", "IsPaywalled", request.IsPaywalled!)
-            .Search(request.SearchQuery ?? string.Empty, ["s.title", "s.content"])
-            .OrderBy(request.Sort ?? "s.created_at_utc DESC")
-            .Paginate(request.Page, request.PageSize);
+            .WhereIf(request.IsPaywalled.HasValue, "s.is_paywalled = @IsPaywalled", "IsPaywalled", request.IsPaywalled!);
+
+        // Use Full Text Search if search query is provided
+        if (!string.IsNullOrWhiteSpace(request.SearchQuery))
+        {
+            sqlBuilder.FullTextSearchWithRank(request.SearchQuery, "s.search_vector", "search_rank")
+                      .OrderBy("search_rank DESC", "s.created_at_utc DESC");
+        }
+        else
+        {
+            sqlBuilder.OrderBy(request.Sort ?? "s.created_at_utc DESC");
+        }
+
+        sqlBuilder.Paginate(request.Page, request.PageSize);
 
         // Execute query with pagination
         var (stories, totalCount) = await connection.QueryWithPaginationAsync<StoryDto>(sqlBuilder);
