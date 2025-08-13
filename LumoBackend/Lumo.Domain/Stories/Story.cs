@@ -3,7 +3,7 @@ using Lumo.Domain.Users;
 using Lumo.Domain.Utils;
 
 namespace Lumo.Domain.Stories;
-public sealed class Story : Entity
+public sealed class Story : Entity, IUpdatable
 {
     public string Title { get; private set; }
     public string Slug { get; private set; }
@@ -14,6 +14,7 @@ public sealed class Story : Entity
     public DateTimeOffset? PublishedAtUtc { get; private set; }
     public bool IsPaywalled { get; private set; }
     public bool ReadTimeCalculated { get; private set; }
+    public DateTimeOffset LastUpdatedAtUtc { get; set; }
 
     // Navigation properties
     public User Author { get; private set; }

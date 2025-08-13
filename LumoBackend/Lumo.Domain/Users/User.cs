@@ -8,7 +8,7 @@ namespace Lumo.Domain.Users;
 /// Represents a user in the system.
 /// /// This class contains properties related to the user's identity, profile, and social links.
 /// </summary>
-public class User : Entity
+public class User : Entity, IUpdatable
 {
     public string IdentityId { get; private set; }
     public Name UserName { get; private set; }
@@ -17,6 +17,7 @@ public class User : Entity
     public string ProfilePictureUrl { get; private set; } = string.Empty;
     public string CoverPictureUrl { get; private set; } = string.Empty;
     public SocialLinks? SocialLinks { get; private set; }
+    public DateTimeOffset LastUpdatedAtUtc { get; set; }
 
     public User() { }
 
@@ -32,11 +33,11 @@ public class User : Entity
         var user = new User(IdGenerator.GenerateId(), userName, emailAddress);
 
         user.RaiseDomainEvent(new UserRegisteredDomainEvent(user.Id));
-        
+
         return user;
     }
 
-    public void SetIdentityId (string identityId)
+    public void SetIdentityId(string identityId)
     {
         if (string.IsNullOrWhiteSpace(identityId))
         {

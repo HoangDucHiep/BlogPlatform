@@ -4,7 +4,6 @@ using Lumo.Domain.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Newtonsoft.Json;
 
 namespace Lumo.Infrastructure;
 
@@ -35,9 +34,12 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
                     .Property(nameof(Entity.CreatedAtUtc))
                     .HasColumnType("timestamp with time zone")
                     .IsRequired();
+            }
 
+            if (typeof(IUpdatable).IsAssignableFrom(entityType.ClrType))
+            {
                 modelBuilder.Entity(entityType.ClrType)
-                    .Property(nameof(Entity.LastUpdatedAtUtc))
+                    .Property(nameof(IUpdatable.LastUpdatedAtUtc))
                     .HasColumnType("timestamp with time zone")
                     .IsRequired();
             }
@@ -58,11 +60,15 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
                 if (entry.State == EntityState.Added)
                 {
                     entry.Property(nameof(Entity.CreatedAtUtc)).CurrentValue = now;
-                    entry.Property(nameof(Entity.LastUpdatedAtUtc)).CurrentValue = now;
+                    entry.Property(nameof(IUpdatable.LastUpdatedAtUtc)).CurrentValue = now;
                 }
-                else if (entry.State == EntityState.Modified)
+            }
+
+            foreach (EntityEntry<IUpdatable> entry in ChangeTracker.Entries<IUpdatable>())
+            {
+                if (entry.State == EntityState.Modified)
                 {
-                    entry.Property(nameof(Entity.LastUpdatedAtUtc)).CurrentValue = now;
+                    entry.Property(nameof(IUpdatable.LastUpdatedAtUtc)).CurrentValue = now;
                 }
             }
 

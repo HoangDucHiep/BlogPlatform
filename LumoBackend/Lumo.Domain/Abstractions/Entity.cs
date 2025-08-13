@@ -7,12 +7,10 @@ public abstract class Entity
 
 
     public DateTimeOffset CreatedAtUtc { get; init; } = DateTimeOffset.UtcNow;
-    public DateTimeOffset LastUpdatedAtUtc { get; init; } = DateTimeOffset.UtcNow;
 
     protected Entity(Guid id)
     {
         Id = id;
-        LastUpdatedAtUtc = DateTimeOffset.UtcNow;
     }
 
     protected Entity()
