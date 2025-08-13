@@ -17,6 +17,7 @@ public static class ProblemDetailsFactory
             throw new InvalidOperationException("Cannot create problem details for a successful result");
         }
 
+
         var problemDetails = new ProblemDetails
         {
             Type = GetProblemTypeUri(result.Error!.Code),
@@ -25,8 +26,9 @@ public static class ProblemDetailsFactory
             Detail = result.Error.Message,
             Instance = instance
         };
-
         AddStandardExtensions(problemDetails, traceId);
+
+
         problemDetails.Extensions["errorCode"] = result.Error.Code;
 
         return problemDetails;
@@ -87,6 +89,7 @@ public static class ProblemDetailsFactory
     private static void AddStandardExtensions(ProblemDetails problemDetails, string? traceId = null)
     {
         // Add standard extensions for tracking and debugging
+        problemDetails.Extensions["success"] = false;
         problemDetails.Extensions["traceId"] = traceId ?? Activity.Current?.Id ?? Guid.NewGuid().ToString();
         problemDetails.Extensions["timestamp"] = DateTimeOffset.UtcNow;
     }
@@ -161,7 +164,7 @@ public static class ProblemDetailsFactory
             SortFieldException sortEx =>
                 ("sort-field-error", "Invalid Sort Field", StatusCodes.Status400BadRequest,
                 sortEx.Message),
-                
+
             ValidationException validationEx =>
                 ("validation-error", "Validation Failed", StatusCodes.Status400BadRequest,
                 "One or more validation errors occurred"),

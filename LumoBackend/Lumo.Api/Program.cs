@@ -1,4 +1,5 @@
 using Lumo.Api.Extensions;
+using Lumo.Api.Filters;
 using Lumo.Application;
 using Lumo.Infrastructure;
 
@@ -7,7 +8,10 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<SuccessResponseFilter>();
+});
 
 // OpenAPI and Swagger configuration
 builder.Services.AddOpenApi();
