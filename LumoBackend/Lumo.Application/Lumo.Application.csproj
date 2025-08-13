@@ -23,7 +23,6 @@
 	
 
   <ItemGroup>
-    <Folder Include="Stories\NewFolder\" />
     <Folder Include="Utils\" />
   </ItemGroup>
 

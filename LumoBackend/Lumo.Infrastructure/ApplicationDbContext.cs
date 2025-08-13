@@ -60,12 +60,15 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
                 if (entry.State == EntityState.Added)
                 {
                     entry.Property(nameof(Entity.CreatedAtUtc)).CurrentValue = now;
-                    entry.Property(nameof(IUpdatable.LastUpdatedAtUtc)).CurrentValue = now;
                 }
             }
 
             foreach (EntityEntry<IUpdatable> entry in ChangeTracker.Entries<IUpdatable>())
             {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Property(nameof(IUpdatable.LastUpdatedAtUtc)).CurrentValue = now;
+                }
                 if (entry.State == EntityState.Modified)
                 {
                     entry.Property(nameof(IUpdatable.LastUpdatedAtUtc)).CurrentValue = now;

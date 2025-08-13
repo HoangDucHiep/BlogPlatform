@@ -1,4 +1,5 @@
-﻿using Lumo.Api.Extensions;
+﻿using Lumo.Api.Dtos.Requests;
+using Lumo.Api.Extensions;
 using Lumo.Application.Abstractions.Authentication;
 using Lumo.Application.Stories.CreateNewDraft;
 using Lumo.Application.Stories.GetStories;

@@ -7,7 +7,7 @@ public sealed record PaginationResult<T> : ICollectionResponse<T>
     [JsonPropertyName("metadata")]
     public PaginationMetadata MetaData { get; init; }
 
-    public static PaginationResult<T> CreateAsync(
+    public static PaginationResult<T> Create(
         List<T> source,
         int page,
         int pageSize,

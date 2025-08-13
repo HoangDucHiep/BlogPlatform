@@ -8,6 +8,5 @@ public record SaveChangeVersionDto
     public string Content { get; private set; }
     public string Description { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; init; }
-    public DateTimeOffset LastUpdatedAtUtc { get; init; }
 
 }
