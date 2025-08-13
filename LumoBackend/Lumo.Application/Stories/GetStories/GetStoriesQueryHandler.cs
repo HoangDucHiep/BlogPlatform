@@ -5,20 +5,15 @@ using Lumo.Application.Builders;
 using Lumo.Application.Extensions;
 using Lumo.Application.Stories.Dtos;
 using Lumo.Domain.Abstractions;
-using Lumo.Domain.Stories;
 
 namespace Lumo.Application.Stories.GetStories;
 
 public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationResult<StoryDto>>
 {
-    private readonly IStoryRepository _storyRepository;
-    private readonly IUnitOfWork _unitOfWork;
     private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
-    public GetStoriesQueryHandler(IStoryRepository storyRepository, IUnitOfWork unitOfWork, ISqlConnectionFactory sqlConnectionFactory)
+    public GetStoriesQueryHandler(ISqlConnectionFactory sqlConnectionFactory)
     {
-        _storyRepository = storyRepository ?? throw new ArgumentNullException(nameof(storyRepository));
-        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _sqlConnectionFactory = sqlConnectionFactory ?? throw new ArgumentNullException(nameof(sqlConnectionFactory));
     }
 
@@ -65,7 +60,7 @@ public class GetStoriesQueryHandler : IQueryHandler<GetStoriesQuery, PaginationR
         // Execute query with pagination
         var (stories, totalCount) = await connection.QueryWithPaginationAsync<StoryDto>(sqlBuilder);
 
-        var paginationResult = PaginationResult<StoryDto>.CreateAsync(
+        var paginationResult = PaginationResult<StoryDto>.Create(
             stories,
             request.Page,
             request.PageSize,

@@ -44,10 +44,6 @@ namespace Lumo.Infrastructure.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("description");
 
-                    b.Property<DateTimeOffset>("LastUpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_updated_at_utc");
-
                     b.Property<Guid>("StoryId")
                         .HasColumnType("uuid")
                         .HasColumnName("story_id");
